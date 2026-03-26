@@ -31,8 +31,13 @@ public class PlaceService : IPlaceService
             Name = dto.Name,
             City = dto.City
         };
+
+        var validationContext = new System.ComponentModel.DataAnnotations.ValidationContext(place);
+        System.ComponentModel.DataAnnotations.Validator.ValidateObject(place, validationContext, validateAllProperties: true);
+
         _context.Places.Add(place);
         await _context.SaveChangesAsync();
         return place;
     }
 }
+

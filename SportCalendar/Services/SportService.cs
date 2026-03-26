@@ -27,8 +27,13 @@ public class SportService : ISportService
     public async Task<Sport> CreateSportAsync(CreateSportDTO dto)
     {
         var sport = new Sport { Name = dto.Name };
+
+        var validationContext = new System.ComponentModel.DataAnnotations.ValidationContext(sport);
+        System.ComponentModel.DataAnnotations.Validator.ValidateObject(sport, validationContext, validateAllProperties: true);
+
         _context.Sports.Add(sport);
         await _context.SaveChangesAsync();
         return sport;
     }
 }
+

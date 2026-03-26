@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SportCalendar.Data;
+using SportCalendar.Models;
 using SportCalendar.Models.DTOs;
 using SportCalendar.Services;
 using Xunit;
@@ -38,8 +39,8 @@ public class SportServiceTests
     {
         using (var context = new SportCalendarContext(_options))
         {
-            context.Sports.Add(new Models.Sport { Name = "Sport 1" });
-            context.Sports.Add(new Models.Sport { Name = "Sport 2" });
+            context.Sports.Add(new Sport { Name = "Football" });
+            context.Sports.Add(new Sport { Name = "Basketball" });
             await context.SaveChangesAsync();
         }
 
@@ -48,6 +49,43 @@ public class SportServiceTests
             var service = new SportService(context);
             var result = await service.GetSportsAsync();
             Assert.Equal(2, result.Count());
+        }
+    }
+
+    [Fact]
+    public async Task GetSportAsync_NonExistentId_ShouldReturnNull()
+    {
+        using (var context = new SportCalendarContext(_options))
+        {
+            var service = new SportService(context);
+            var result = await service.GetSportAsync(999);
+            Assert.Null(result);
+        }
+    }
+
+    [Fact]
+    public async Task CreateSportAsync_EmptyName_ShouldThrowValidationException()
+    {
+        var dto = new CreateSportDTO { Name = "" };
+
+        using (var context = new SportCalendarContext(_options))
+        {
+            var service = new SportService(context);
+            await Assert.ThrowsAsync<System.ComponentModel.DataAnnotations.ValidationException>(
+                () => service.CreateSportAsync(dto));
+        }
+    }
+
+    [Fact]
+    public async Task CreateSportAsync_NameTooLong_ShouldThrowValidationException()
+    {
+        var dto = new CreateSportDTO { Name = new string('A', 51) }; // MaxLength is 50
+
+        using (var context = new SportCalendarContext(_options))
+        {
+            var service = new SportService(context);
+            await Assert.ThrowsAsync<System.ComponentModel.DataAnnotations.ValidationException>(
+                () => service.CreateSportAsync(dto));
         }
     }
 }

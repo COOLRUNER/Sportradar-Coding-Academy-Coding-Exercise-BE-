@@ -49,9 +49,13 @@ public class EventService : IEventService
             PlaceId = dto.PlaceId
         };
 
+        var validationContext = new System.ComponentModel.DataAnnotations.ValidationContext(newEvent);
+        System.ComponentModel.DataAnnotations.Validator.ValidateObject(newEvent, validationContext, validateAllProperties: true);
+
         _context.Events.Add(newEvent);
         await _context.SaveChangesAsync();
 
         return newEvent;
     }
 }
+

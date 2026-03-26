@@ -27,8 +27,13 @@ public class TeamService : ITeamService
     public async Task<Team> CreateTeamAsync(CreateTeamDTO dto)
     {
         var team = new Team { Name = dto.Name };
+
+        var validationContext = new System.ComponentModel.DataAnnotations.ValidationContext(team);
+        System.ComponentModel.DataAnnotations.Validator.ValidateObject(team, validationContext, validateAllProperties: true);
+
         _context.Teams.Add(team);
         await _context.SaveChangesAsync();
         return team;
     }
 }
+
