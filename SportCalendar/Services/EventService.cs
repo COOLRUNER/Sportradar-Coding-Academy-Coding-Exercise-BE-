@@ -58,4 +58,3 @@ public class EventService : IEventService
         return newEvent;
     }
 }
-

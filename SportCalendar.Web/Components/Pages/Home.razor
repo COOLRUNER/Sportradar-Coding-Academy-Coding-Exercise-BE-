@@ -1,0 +1,90 @@
+@page "/"
+@using SportCalendar.Web.Models
+@inject IHttpClientFactory HttpClientFactory
+@rendermode InteractiveServer
+
+<PageTitle>SportCalendar — Home</PageTitle>
+
+<section class="text-center py-16">
+    <div class="inline-flex items-center gap-3 mb-6 font-extrabold uppercase tracking-tighter text-emerald-500">
+        <h1 class="text-5xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+            SportCalendar
+        </h1>
+    </div>
+    <p class="text-gray-400 text-lg max-w-xl mx-auto mb-10">
+        Your central hub for upcoming sports events. Browse matches, track results, and stay on top of the action.
+    </p>
+    <div class="flex justify-center gap-4">
+        <a href="/events" class="bg-emerald-500 hover:bg-emerald-400 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-emerald-500/25">
+            Browse Events
+        </a>
+        <a href="/events/add" class="border border-gray-700 hover:border-emerald-500 text-gray-300 hover:text-white font-semibold px-6 py-3 rounded-xl transition-all">
+            Add an Event
+        </a>
+    </div>
+</section>
+
+<section class="mt-4">
+    <h2 class="text-2xl font-bold text-white mb-6">Upcoming Events</h2>
+
+    @if (!string.IsNullOrEmpty(_errorMsg))
+    {
+        <div class="bg-red-900/50 border border-red-500 text-red-300 rounded-xl px-5 py-4 mb-6 flex items-center gap-3">
+            <span class="text-lg">✕</span>
+            <span>@_errorMsg</span>
+        </div>
+    }
+
+    @if (_loading)
+    {
+        <div class="flex justify-center py-16">
+            <div class="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+    }
+    else if (_events is null || !_events.Any())
+    {
+        <div class="text-center py-16 text-gray-500">
+            <p class="text-lg">No upcoming events found.</p>
+            <a href="/events/add" class="text-emerald-400 hover:underline mt-2 inline-block">Add the first one</a>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var ev in _events.Take(6))
+            {
+                <EventCard Event="ev" />
+            }
+        </div>
+        @if (_events.Count() > 6)
+        {
+            <div class="text-center mt-8">
+                <a href="/events" class="text-emerald-400 hover:underline font-medium">View all events →</a>
+            </div>
+        }
+    }
+</section>
+
+@code {
+    private IEnumerable<EventDto>? _events;
+    private bool _loading = true;
+    private string? _errorMsg;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("SportCalendarApi");
+            _events = await http.GetFromJsonAsync<IEnumerable<EventDto>>("api/events");
+        }
+        catch (Exception ex)
+        {
+            _errorMsg = $"Failed to load events: {ex.Message}";
+            _events = Enumerable.Empty<EventDto>();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

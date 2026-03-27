@@ -1,0 +1,49 @@
+@using SportCalendar.Web.Models
+
+<div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 hover:border-gray-700 transition-colors">
+    <!-- Header: Team vs Team -->
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+            <span class="font-semibold text-white truncate">@(Event.HomeTeam?.Name ?? "TBD")</span>
+            <span class="text-xs text-gray-500 font-bold flex-shrink-0">vs</span>
+            <span class="font-semibold text-white truncate">@(Event.AwayTeam?.Name ?? "TBD")</span>
+        </div>
+        <StatusBadge Status="@Event.Status" />
+    </div>
+
+    <!-- Score (if played) -->
+    @if (Event.HomeScore.HasValue && Event.AwayScore.HasValue)
+    {
+        <div class="text-center mb-4">
+            <span class="text-3xl font-extrabold text-emerald-400">
+                @Event.HomeScore — @Event.AwayScore
+            </span>
+        </div>
+    }
+
+    <!-- Description -->
+    <p class="text-gray-400 text-sm truncate mb-4">@Event.Description</p>
+
+    <!-- Meta info -->
+    <div class="space-y-1.5 text-xs text-gray-600">
+        <div class="flex items-center gap-2">
+            <span class="font-semibold uppercase tracking-wider text-[10px]">Venue</span>
+            <span class="text-gray-400">@(Event.Place?.Name ?? "Unknown venue")</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="font-semibold uppercase tracking-wider text-[10px]">Date</span>
+            <span class="text-gray-400">@Event.Start.ToLocalTime().ToString("ddd, MMM d yyyy • HH:mm")</span>
+        </div>
+        @if (Event.Sport is not null)
+        {
+            <div class="flex items-center gap-2">
+                <span class="font-semibold uppercase tracking-wider text-[10px]">Sport</span>
+                <span class="text-gray-400">@Event.Sport.Name</span>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public required EventDto Event { get; set; }
+}

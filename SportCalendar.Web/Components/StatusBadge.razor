@@ -1,0 +1,16 @@
+@* Colored status badge *@
+<span class="@BadgeClass text-xs font-semibold px-2.5 py-0.5 rounded-full flex-shrink-0">
+    @Status
+</span>
+
+@code {
+    [Parameter] public required string Status { get; set; }
+
+    private string BadgeClass => Status switch
+    {
+        "InProgress" => "bg-red-500/20 text-red-400 border border-red-500/30",
+        "Completed"  => "bg-gray-700 text-gray-300",
+        "Cancelled"  => "bg-orange-900/30 text-orange-400 border border-orange-500/30",
+        _            => "bg-emerald-900/30 text-emerald-400 border border-emerald-500/30", // Scheduled
+    };
+}

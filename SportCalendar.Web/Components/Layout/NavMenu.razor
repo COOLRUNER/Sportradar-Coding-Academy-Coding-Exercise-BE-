@@ -1,0 +1,23 @@
+<nav class="bg-gray-900 border-b border-gray-800 shadow-lg sticky top-0 z-50">
+    <div class="container mx-auto px-4 max-w-7xl flex items-center justify-between h-16">
+        <a href="/" class="flex items-center text-xl font-bold text-white hover:text-emerald-400 transition-colors">
+            SportCalendar
+        </a>
+        <div class="flex items-center gap-6">
+            <NavLink href="/" Match="NavLinkMatch.All"
+                     class="text-gray-400 hover:text-white transition-colors font-medium text-sm"
+                     ActiveClass="text-white">
+                Home
+            </NavLink>
+            <NavLink href="/events"
+                     class="text-gray-400 hover:text-white transition-colors font-medium text-sm"
+                     ActiveClass="text-white">
+                Events
+            </NavLink>
+            <NavLink href="/events/add"
+                     class="bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+                + Add Event
+            </NavLink>
+        </div>
+    </div>
+</nav>
