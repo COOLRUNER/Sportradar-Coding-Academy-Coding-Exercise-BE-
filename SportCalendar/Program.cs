@@ -18,13 +18,25 @@ builder.Services.AddScoped<ISportService, SportService>();
 builder.Services.AddScoped<IPlaceService, PlaceService>();
 builder.Services.AddScoped<ITeamService, TeamService>();
 
-
-builder.Services.AddControllers();
-
-builder.Services.ConfigureHttpJsonOptions(options =>
+builder.Services.AddCors(options =>
 {
-    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.AddPolicy("BlazorFrontend", policy =>
+    {
+        policy
+            .WithOrigins("https://localhost:7241", "http://localhost:5074")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
 });
+
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 
 var app = builder.Build();
 
@@ -35,6 +47,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("BlazorFrontend");
 
 app.MapControllers();
 
