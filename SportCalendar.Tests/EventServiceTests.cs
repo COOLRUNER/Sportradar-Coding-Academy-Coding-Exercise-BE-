@@ -221,4 +221,45 @@ public class EventServiceTests
                 System.ComponentModel.DataAnnotations.Validator.ValidateObject(result, validationContext, true));
         }
     }
+
+    [Fact]
+    public async Task UpdateEventAsync_ShouldUpdateEvent()
+    {
+        int eventId;
+        using (var context = new SportCalendarContext(_options))
+        {
+            await SeedData(context);
+            var ev = new Event 
+            { 
+                Description = "Initial Event", 
+                Start = DateTimeOffset.UtcNow, 
+                SportId = 1, 
+                PlaceId = 1, 
+                HomeTeamId = 1, 
+                AwayTeamId = 2, 
+                Status = EventStatus.Scheduled 
+            };
+            context.Events.Add(ev);
+            await context.SaveChangesAsync();
+            eventId = ev.Id;
+        }
+
+        var updateDto = new UpdateEventDTO
+        {
+            HomeScore = 2,
+            AwayScore = 1,
+            Status = EventStatus.Completed
+        };
+
+        using (var context = new SportCalendarContext(_options))
+        {
+            var service = new EventService(context);
+            var result = await service.UpdateEventAsync(eventId, updateDto);
+
+            Assert.NotNull(result);
+            Assert.Equal(2, result.HomeScore);
+            Assert.Equal(1, result.AwayScore);
+            Assert.Equal(EventStatus.Completed, result.Status);
+        }
+    }
 }

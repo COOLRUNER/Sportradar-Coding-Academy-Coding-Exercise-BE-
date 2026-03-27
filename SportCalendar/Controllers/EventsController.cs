@@ -39,4 +39,15 @@ public class EventsController : ControllerBase
         var createdEvent = await _eventService.CreateEventAsync(dto);
         return CreatedAtAction(nameof(GetEvent), new { id = createdEvent.Id }, createdEvent);
     }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdateEvent(int id, UpdateEventDTO dto)
+    {
+        var updatedEvent = await _eventService.UpdateEventAsync(id, dto);
+        if (updatedEvent is null)
+        {
+            return NotFound();
+        }
+        return Ok(updatedEvent);
+    }
 }

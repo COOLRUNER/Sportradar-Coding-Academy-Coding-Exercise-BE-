@@ -7,7 +7,6 @@
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
-  <!-- Tailwind CSS build -->
   <Target Name="BuildTailwind" BeforeTargets="Build">
     <Exec Command="npx tailwindcss -i ./Styles/app.css -o ./wwwroot/css/app.css --minify" />
   </Target>

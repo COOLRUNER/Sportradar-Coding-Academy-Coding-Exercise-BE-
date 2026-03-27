@@ -57,4 +57,20 @@ public class EventService : IEventService
 
         return newEvent;
     }
+
+    public async Task<Event?> UpdateEventAsync(int id, UpdateEventDTO dto)
+    {
+        var existingEvent = await _context.Events.FindAsync(id);
+        if (existingEvent == null) return null;
+
+        if (dto.HomeScore.HasValue) existingEvent.HomeScore = dto.HomeScore.Value;
+        if (dto.AwayScore.HasValue) existingEvent.AwayScore = dto.AwayScore.Value;
+        if (dto.Status.HasValue) existingEvent.Status = dto.Status.Value;
+
+        var validationContext = new System.ComponentModel.DataAnnotations.ValidationContext(existingEvent);
+        System.ComponentModel.DataAnnotations.Validator.ValidateObject(existingEvent, validationContext, validateAllProperties: true);
+
+        await _context.SaveChangesAsync();
+        return existingEvent;
+    }
 }
