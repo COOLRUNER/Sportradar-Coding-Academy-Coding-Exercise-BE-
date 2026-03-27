@@ -1,0 +1,200 @@
+@page "/events/edit/{Id:int}"
+@using SportCalendar.Web.Models
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Edit Event — SportCalendar</PageTitle>
+
+<div class="max-w-2xl mx-auto">
+    <div class="flex items-center gap-4 mb-6">
+        <button @onclick="GoBack" class="text-gray-400 hover:text-white transition-colors">
+            <span class="text-xl">←</span>
+        </button>
+        <h1 class="text-3xl font-bold">Edit Event</h1>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="flex justify-center py-16">
+            <div class="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+    }
+    else if (_event is null)
+    {
+        <div class="bg-red-900/50 border border-red-500 text-red-300 rounded-xl px-5 py-4 flex items-center gap-3">
+            <span>Event not found.</span>
+        </div>
+    }
+    else
+    {
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-7 space-y-6">
+            <!-- Event Info (Read Only) -->
+            <div class="grid grid-cols-2 gap-4 pb-4 border-b border-gray-800">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Description</label>
+                    <p class="text-white font-medium">@_event.Description</p>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Sport</label>
+                    <p class="text-white font-medium">@(_event.Sport?.Name ?? "N/A")</p>
+                </div>
+            </div>
+
+            <!-- Teams (Read Only) -->
+            <div class="flex items-center justify-between text-center bg-gray-800/50 rounded-xl p-4">
+                <div class="flex-1">
+                    <p class="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-1">Home</p>
+                    <p class="text-white font-bold">@(_event.HomeTeam?.Name ?? "TBD")</p>
+                </div>
+                <div class="px-4 text-gray-600 font-black italic">VS</div>
+                <div class="flex-1">
+                    <p class="text-gray-400 text-[10px] uppercase font-bold tracking-wider mb-1">Away</p>
+                    <p class="text-white font-bold">@(_event.AwayTeam?.Name ?? "TBD")</p>
+                </div>
+            </div>
+
+            <!-- Scores (Editable) -->
+            <div class="space-y-3">
+                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Final Score</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 flex flex-col items-center gap-2">
+                        <label class="text-[10px] text-gray-500 uppercase font-bold">Home Score</label>
+                        <input type="number" @bind="_homeScore" min="0"
+                               class="bg-transparent text-center text-2xl font-black text-emerald-400 w-full focus:outline-none" />
+                    </div>
+                    <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 flex flex-col items-center gap-2">
+                        <label class="text-[10px] text-gray-500 uppercase font-bold">Away Score</label>
+                        <input type="number" @bind="_awayScore" min="0"
+                               class="bg-transparent text-center text-2xl font-black text-emerald-400 w-full focus:outline-none" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status (Editable) -->
+            <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Event Status</label>
+                <select @bind="_status" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-emerald-500">
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="InProgress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_errorMsg))
+            {
+                <div class="text-red-400 text-sm bg-red-900/20 border border-red-900/30 rounded-lg p-3">
+                    @_errorMsg
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(_successMsg))
+            {
+                <div class="text-emerald-400 text-sm bg-emerald-900/20 border border-emerald-900/30 rounded-lg p-3">
+                    @_successMsg
+                </div>
+            }
+
+            <div class="pt-4 flex gap-3">
+                <button @onclick="GoBack" class="flex-1 border border-gray-700 hover:border-gray-600 text-gray-300 font-semibold py-3 rounded-xl transition-all">
+                    Cancel
+                </button>
+                <button @onclick="HandleSubmit" disabled="@_submitting"
+                        class="flex-[2] bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-emerald-500/20">
+                    @(_submitting ? "Saving..." : "Update Event")
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private EventDto? _event;
+    private bool _loading = true;
+    private bool _submitting = false;
+    private int? _homeScore;
+    private int? _awayScore;
+    private string _status = "Scheduled";
+    private string? _errorMsg;
+    private string? _successMsg;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEvent();
+    }
+
+    private async Task LoadEvent()
+    {
+        _loading = true;
+        _errorMsg = null;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("SportCalendarApi");
+            _event = await http.GetFromJsonAsync<EventDto>($"api/events/{Id}");
+            if (_event != null)
+            {
+                _homeScore = _event.HomeScore;
+                _awayScore = _event.AwayScore;
+                _status = _event.Status;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMsg = $"Failed to load event: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        _submitting = true;
+        _errorMsg = null;
+        _successMsg = null;
+
+        try
+        {
+            var http = HttpClientFactory.CreateClient("SportCalendarApi");
+            var updateDto = new
+            {
+                homeScore = _homeScore,
+                awayScore = _awayScore,
+                status = Enum.Parse<EventStatus>(_status)
+            };
+
+            var response = await http.PutAsJsonAsync($"api/events/{Id}", updateDto);
+            if (response.IsSuccessStatusCode)
+            {
+                _successMsg = "Event updated successfully!";
+                await Task.Delay(1500);
+                Navigation.NavigateTo("/events");
+            }
+            else
+            {
+                _errorMsg = "Failed to update event. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMsg = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/events");
+
+    private enum EventStatus
+    {
+        Scheduled,
+        InProgress,
+        Completed,
+        Cancelled
+    }
+}
