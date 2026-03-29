@@ -1,0 +1,14 @@
+AI was integrated into the development of the project as a productivity accelerator. The usage focused on:
+
+	Frontend Stylization
+ - Accelerated development of UI components (e.g., EventCard, StatusBadge) using Tailwind CSS.
+ - Styling of the application was mainly done by AI.
+
+	Quality Assurance & Testing
+- After manually writing the initial batch of unit tests, AI was used to generate redundant unit tests (null checks, empty collections) that have to be implemented but are very repetitive.
+
+	Development Efficiency
+- Rapid resolution of configuration issues and EF Core migration errors.
+- Helped with the setup of middleware configurations including CORS policies, JSON serialization settings and OpenAPI.
+- The architectural direction, domain logic, and system integration were human-led with AI as a helper to handle some implementation details.
+
